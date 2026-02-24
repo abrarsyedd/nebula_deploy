@@ -1,3 +1,6 @@
+-- Explicitly select the database
+USE nebuladb;
+
 -- Create the system_status table
 CREATE TABLE IF NOT EXISTS system_status (
     id INT AUTO_INCREMENT PRIMARY KEY,
