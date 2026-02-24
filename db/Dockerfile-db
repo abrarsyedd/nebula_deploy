@@ -1,0 +1,5 @@
+FROM mysql:8.0
+
+# Copy the initialization script directly into the image during the build process
+# This makes the database image fully self-contained and portable!
+COPY init.sql /docker-entrypoint-initdb.d/init.sql
