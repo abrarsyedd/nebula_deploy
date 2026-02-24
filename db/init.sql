@@ -1,4 +1,5 @@
--- Explicitly select the database
+-- Create the database if it doesn't exist
+CREATE DATABASE IF NOT EXISTS nebuladb;
 USE nebuladb;
 
 -- Create the system_status table
