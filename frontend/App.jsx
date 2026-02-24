@@ -127,7 +127,7 @@ const HomePage = ({ setPage }) => (
           </div>
         </div>
         <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
-          Automate Your Deployments. <br className="hidden md:block"/> Scale with Confidence.
+          Automate Your Deployments. <br className="hidden md:block"/> Scale with Confidence...
         </h1>
         <p className="text-xl md:text-2xl text-blue-200 mb-10 max-w-3xl mx-auto font-light">
           NebulaDeploy is the modern CI/CD engine that containerizes your workflow, running Jenkins, React, Node, and MySQL in perfect harmony.
