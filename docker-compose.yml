@@ -14,7 +14,6 @@ services:
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-      # Mount the host Docker socket so Jenkins can build Docker images
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
@@ -61,15 +60,14 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
-      # Mount the entire db directory to avoid the "directory" error
-      - ./db:/docker-entrypoint-initdb.d
     ports:
       - "3307:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      # FIX: We now provide the password so the ping succeeds!
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
     restart: always
 
 volumes:
