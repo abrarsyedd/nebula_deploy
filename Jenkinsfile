@@ -49,7 +49,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'cp $BACKEND_ENV_SECRET .env'
+                    sh 'echo "$BACKEND_ENV_SECRET" > .env'
                     sh "docker compose down --remove-orphans"
                     sh "docker compose -p ${APP_NAME} pull"
                     sh "docker compose -p ${APP_NAME} up -d"
