@@ -19,13 +19,49 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Test DB Connection
+// Test DB Connection and Initialize Tables
 pool.getConnection((err, connection) => {
     if (err) {
         console.error('Database connection failed:', err.message);
     } else {
         console.log('Successfully connected to MySQL database.');
-        connection.release();
+
+        // 1. Create the table automatically if it doesn't exist
+        const createTableQuery = `
+            CREATE TABLE IF NOT EXISTS system_status (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                service_name VARCHAR(100) NOT NULL,
+                status VARCHAR(50) NOT NULL,
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `;
+
+        connection.query(createTableQuery, (err) => {
+            if (err) {
+                console.error('Error creating table:', err);
+                connection.release();
+                return;
+            }
+            
+            console.log('Table system_status is ready.');
+
+            // 2. Check if the table is empty. If it is, insert our data!
+            connection.query('SELECT COUNT(*) AS count FROM system_status', (err, results) => {
+                if (!err && results[0].count === 0) {
+                    const insertMockData = `
+                        INSERT INTO system_status (service_name, status) VALUES 
+                        ('Frontend UI Engine', 'Operational'),
+                        ('Backend API Service', 'Operational'),
+                        ('MySQL Database', 'Healthy'),
+                        ('Jenkins CI/CD Pipeline', 'Awaiting Triggers')
+                    `;
+                    connection.query(insertMockData, () => {
+                        console.log('Initial mock data successfully inserted!');
+                    });
+                }
+                connection.release();
+            });
+        });
     }
 });
 
