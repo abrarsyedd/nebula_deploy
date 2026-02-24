@@ -6,7 +6,7 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('github-creds')
         APP_NAME = 'nebula-deploy'
         IMAGE_REPO = "syed048/${APP_NAME}"
-        BACKEND_ENV_SECRET = credentials('nebula-backend-env')
+        
     }
     
     stages {
@@ -49,7 +49,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'echo "$BACKEND_ENV_SECRET" > .env'
+                    sh 'cp $ENV_FILE .env'
                     sh "docker compose down --remove-orphans"
                     sh "docker compose -p ${APP_NAME} pull"
                     sh "docker compose -p ${APP_NAME} up -d"
