@@ -6,7 +6,6 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('github-creds')
         APP_NAME = 'nebula-deploy'
         IMAGE_REPO = "syed048/${APP_NAME}"
-        // Notice we removed BACKEND_ENV_SECRET from here
     }
     
     stages {
@@ -48,14 +47,16 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // Fetch the Secret File and temporarily assign its path to ENV_FILE
                 withCredentials([file(credentialsId: 'nebula-backend-env', variable: 'ENV_FILE')]) {
                     script {
-                        // Now we can safely use 'cp' because it's a real file!
                         sh 'cp $ENV_FILE .env'
-                        sh "docker compose down --remove-orphans"
-                        sh "docker compose -p ${APP_NAME} pull"
-                        sh "docker compose -p ${APP_NAME} up -d"
+                        
+                        // 1. Force remove the old app containers (leaves jenkins-server completely alone)
+                        sh 'docker rm -f nebula-frontend nebula-backend nebula-db || true'
+                        
+                        // 2. Only pull and deploy the specific app services
+                        sh "docker compose -p ${APP_NAME} pull frontend backend db"
+                        sh "docker compose -p ${APP_NAME} up -d frontend backend db"
                     }
                 }
             }
