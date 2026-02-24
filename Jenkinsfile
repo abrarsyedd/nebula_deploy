@@ -47,22 +47,15 @@ pipeline {
             steps {
                 script {
                     sh 'cp $BACKEND_ENV_SECRET .env'
+                    
+                    // 1. Safely delete the old app containers (leaves Jenkins alone!)
                     sh "docker rm -f nebula-frontend nebula-backend nebula-db || true"
+                    
+                    // 2. Pull the newest images we just pushed
                     sh "docker compose -p ${APP_NAME} pull frontend backend"
                     
-                    // 1. Start ONLY the Database
-                    sh "docker compose -p ${APP_NAME} up -d db"
-                    
-                    // 2. Wait 30 seconds for MySQL to fully boot up and pass the healthcheck
-                    sh "sleep 30"
-                    
-                    // 3. Inject the SQL script directly into the running database!
-                    sh '''
-                        docker exec -i nebula-db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' < db/init.sql
-                    '''
-                    
-                    // 4. Start the backend and frontend now that the data is ready
-                    sh "docker compose -p ${APP_NAME} up -d frontend backend"
+                    // 3. Start ONLY the app and database (leaves Jenkins alone!)
+                    sh "docker compose -p ${APP_NAME} up -d frontend backend db"
                 }
             }
         }
