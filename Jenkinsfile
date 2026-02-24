@@ -6,7 +6,7 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('github-creds')
         APP_NAME = 'nebula-deploy'
         IMAGE_REPO = "syed048/${APP_NAME}"
-        
+        // Notice we removed BACKEND_ENV_SECRET from here
     }
     
     stages {
@@ -48,11 +48,15 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                script {
-                    sh 'cp $ENV_FILE .env'
-                    sh "docker compose down --remove-orphans"
-                    sh "docker compose -p ${APP_NAME} pull"
-                    sh "docker compose -p ${APP_NAME} up -d"
+                // Fetch the Secret File and temporarily assign its path to ENV_FILE
+                withCredentials([file(credentialsId: 'nebula-backend-env', variable: 'ENV_FILE')]) {
+                    script {
+                        // Now we can safely use 'cp' because it's a real file!
+                        sh 'cp $ENV_FILE .env'
+                        sh "docker compose down --remove-orphans"
+                        sh "docker compose -p ${APP_NAME} pull"
+                        sh "docker compose -p ${APP_NAME} up -d"
+                    }
                 }
             }
         }
@@ -60,7 +64,6 @@ pipeline {
 
     post {
         always {
-            // Added '|| true' so the pipeline doesn't fail if the file is already deleted
             sh 'rm -f .env || true' 
             echo 'Pipeline Finished'
         }
